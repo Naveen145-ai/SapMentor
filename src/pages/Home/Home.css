@@ -1,5 +1,92 @@
 .start {
-   text-align: center;
- 
-  font-family: sans;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9fafc;
+  min-height: 100vh;
+}
+
+.group-card {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #d1d5db; /* 1px light gray border */
+  border-radius: 0.75rem;
+}
+
+.submission-block {
+  background-color: #f9f9f9;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+}
+
+.flex-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.view-toggle {
+  color: #2563eb;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.view-toggle:hover {
+  text-decoration: underline;
+}
+
+.detail-info {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.detail-info a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.action-buttons {
+  margin-top: 0.75rem;
+}
+
+button {
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+.bg-green-600 {
+  background-color: #22c55e;
+}
+
+.bg-green-600:hover {
+  background-color: #16a34a;
+}
+
+.bg-red-600 {
+  background-color: #ef4444;
+}
+
+.bg-red-600:hover {
+  background-color: #dc2626;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+.text-gray-500 {
+  color: #6b7280;
 }
