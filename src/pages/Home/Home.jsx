@@ -84,15 +84,17 @@ const Home = () => {
                   <div className="flex justify-between items-center">
                     <p className="font-medium">{submission.activity}</p>
                     <span
-                      className="text-blue-600 cursor-pointer"
-                      onClick={() =>
-                        setExpandedId(
-                          expandedId === submission._id ? null : submission._id
-                        )
-                      }
-                    >
-                      {expandedId === submission._id ? '▲ Hide' : '▼ View'}
-                    </span>
+  style={{ cursor: 'pointer' }}
+  className="text-blue-600"
+  onClick={() =>
+    setExpandedId(
+      expandedId === submission._id ? null : submission._id
+    )
+  }
+>
+  {expandedId === submission._id ? '▲ Hide' : '▼ View'}
+</span>
+
                   </div>
 
                   {expandedId === submission._id && (
