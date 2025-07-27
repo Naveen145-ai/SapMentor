@@ -8,31 +8,35 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+ const handleLogin = async (e) => {
+  e.preventDefault();
 
-    try {
-      const res = await fetch('http://localhost:8080/api/sap/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const res = await fetch('http://localhost:8080/api/sap/user-login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (res.ok) {
-       
-        navigate('/home');
-      } else {
-        alert(data.message || 'Login failed');
-      }
-    } catch (error) {
-      alert('Server error');
-      console.error(error);
+    if (res.ok) {
+      // ✅ Save mentor email in localStorage
+       localStorage.setItem('mentorEmail', data.email); // important for Home.jsx
+  localStorage.setItem('role', data.role); // optional for role-based routing
+
+      // ✅ Navigate to dashboard
+      navigate('/home');
+    } else {
+      alert(data.message || 'Login failed');
     }
-  };
+  } catch (error) {
+    alert('Server error');
+    console.error(error);
+  }
+};
 
   return (
     <div className='container'>

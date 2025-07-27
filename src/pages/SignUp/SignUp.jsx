@@ -20,7 +20,7 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:8080/api/sap/signup', {
+      const res = await fetch('http://localhost:8080/api/sap/user-signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
