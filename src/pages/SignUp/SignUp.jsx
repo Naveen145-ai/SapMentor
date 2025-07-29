@@ -8,7 +8,8 @@ const SignUp = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: ''
   });
 
   const handleChange = (e) => {
@@ -57,6 +58,9 @@ const SignUp = () => {
 
           <label>Confirm Password: </label>
           <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder='Enter password again..' /><br />
+
+                      <label>Enter Role: </label>
+          <input type="text" name="role" value={formData.role} onChange={handleChange} placeholder='Enter Role Mentor..' /><br />
 
           <button type="submit" >Sign Up</button>
         </form>
