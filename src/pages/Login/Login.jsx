@@ -8,40 +8,40 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
- const handleLogin = async (e) => {
-  e.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  try {
-    const res = await fetch('http://localhost:8080/api/sap/user-login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch('http://localhost:8080/api/sap/user-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.ok) {
-      // ✅ Save mentor email in localStorage
-       localStorage.setItem('mentorEmail', data.email); // important for Home.jsx
-  localStorage.setItem('role', data.role); // optional for role-based routing
+      if (res.ok) {
+        // ✅ Save mentor email in localStorage
+        localStorage.setItem('mentorEmail', data.email);
+        localStorage.setItem('role', data.role);
 
-      // ✅ Navigate to dashboard
-      navigate('/home');
-    } else {
-      alert(data.message || 'Login failed');
+        // ✅ Navigate to dashboard
+        navigate('/home');
+      } else {
+        alert(data.message || 'Login failed');
+      }
+    } catch (error) {
+      alert('Server error');
+      console.error(error);
     }
-  } catch (error) {
-    alert('Server error');
-    console.error(error);
-  }
-};
+  };
 
   return (
     <div className='container'>
       <div className='login'>
-        <h1>Login Form</h1>
+        <h1>Mentor Login Form</h1>
         <form onSubmit={handleLogin}>
           <label>Email: </label>
           <input
@@ -61,6 +61,17 @@ const Login = () => {
 
           <button type="submit">Login</button>
         </form>
+
+        {/* Link to Signup */}
+        <p style={{ marginTop: '10px' }}>
+          Don’t have an account?{' '}
+          <span
+            onClick={() => navigate('/')}
+            style={{ color: 'blue', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            Sign Up here
+          </span>
+        </p>
       </div>
     </div>
   );

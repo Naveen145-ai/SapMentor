@@ -1,0 +1,102 @@
+/* Full page container */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+
+  /* Soft gradient background */
+  background: linear-gradient(135deg, #f3f4f6, #e0f2fe, #dbeafe);
+  
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Signup Card */
+.login {
+  background: white;
+  padding: 2rem 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  max-width: 420px;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Form Title */
+.login h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #1e40af;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+/* Form Labels */
+.login label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  display: block;
+  color: #374151;
+}
+
+/* Form Inputs */
+.login input {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  outline: none;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: #f9fafb;
+}
+
+.login input:focus {
+  border-color: #3178c6;
+  box-shadow: 0 0 0 3px rgba(49, 120, 198, 0.15);
+  background-color: white;
+}
+
+/* Submit Button */
+.login button {
+  width: 100%;
+  background-color: #3178c6;
+  color: white;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.login button:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.login button:active {
+  transform: translateY(1px);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .login {
+    padding: 1.5rem;
+  }
+}
