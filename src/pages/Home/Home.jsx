@@ -5,6 +5,8 @@ const Home = () => {
   const [hasNew, setHasNew] = useState(false); // notification state
   const [selectedImage, setSelectedImage] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [marksMap, setMarksMap] = useState({});
+  const [noteMap, setNoteMap] = useState({});
   const mentorEmail = localStorage.getItem('mentorEmail');
 
   // Check for new/pending submissions (notification)
@@ -65,10 +67,13 @@ const Home = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
+      const marksAwarded = Number(marksMap[id] || 0);
+      const decisionNote = noteMap[id] || '';
+
       const res = await fetch(`http://localhost:8080/api/mentor/update-status/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus, marksAwarded, decisionNote }),
       });
 
       const result = await res.json();
@@ -77,7 +82,7 @@ const Home = () => {
           const updated = { ...prev };
           for (let email in updated) {
             updated[email].submissions = updated[email].submissions.map(s => 
-              s._id === id ? { ...s, status: newStatus } : s
+              s._id === id ? { ...s, status: newStatus, marksAwarded, decisionNote } : s
             );
           }
           return updated;
@@ -199,7 +204,7 @@ const Home = () => {
             {/* Grid Layout for All Proofs */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
               gap: '18px',
               marginBottom: '20px'
             }}>
@@ -211,6 +216,7 @@ const Home = () => {
                   
                   return proofUrls.map((proofUrl) => {
                     const currentIndex = globalIndex++; // Use and increment global counter
+                    const isDecided = submission.status !== 'pending';
                     
                     return (
                       <div key={`${submission._id}-${currentIndex}`} style={{
@@ -220,18 +226,8 @@ const Home = () => {
                         boxShadow: '0 3px 10px rgba(0,0,0,0.08)',
                         border: `2px solid ${submission.status === 'accepted' ? '#4CAF50' : submission.status === 'rejected' ? '#f44336' : '#ff9800'}`,
                         position: 'relative',
-                        cursor: 'pointer',
                         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out'
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-4px)';
-                        e.currentTarget.style.boxShadow = '0 7px 22px rgba(0,0,0,0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 3px 10px rgba(0,0,0,0.08)';
-                      }}
-                      onClick={() => openImageModal(proofUrl)}
                       >
                         {/* Image */}
                         <div style={{
@@ -240,8 +236,9 @@ const Home = () => {
                           borderRadius: '8px',
                           overflow: 'hidden',
                           marginBottom: '14px',
-                          position: 'relative'
-                        }}>
+                          position: 'relative',
+                          cursor: 'pointer'
+                        }} onClick={() => openImageModal(proofUrl)}>
                           <img
                             src={`http://localhost:8080${proofUrl}`}
                             alt={`Proof ${currentIndex}`}
@@ -285,7 +282,7 @@ const Home = () => {
                         </div>
 
                         {/* Submission Info */}
-                        <div style={{ marginBottom: '14px' }}>
+                        <div style={{ marginBottom: '10px' }}>
                           <p style={{ 
                             fontSize: '13px', 
                             marginBottom: '7px',
@@ -309,7 +306,34 @@ const Home = () => {
                               {submission.status}
                             </span>
                           </p>
+                          {isDecided && (
+                            <div style={{ fontSize: '12px', color: '#374151' }}>
+                              <div><strong>Marks Awarded:</strong> {submission.marksAwarded || 0}</div>
+                              {submission.decisionNote && <div><strong>Note:</strong> {submission.decisionNote}</div>}
+                            </div>
+                          )}
                         </div>
+
+                        {/* Decision Inputs */}
+                        {!isDecided && (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px', marginBottom: '8px' }}>
+                            <input
+                              type="number"
+                              placeholder="Marks"
+                              min="0"
+                              value={marksMap[submission._id] || ''}
+                              onChange={(e) => setMarksMap(prev => ({ ...prev, [submission._id]: e.target.value }))}
+                              style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '12px' }}
+                            />
+                            <textarea
+                              placeholder="Optional note"
+                              rows="2"
+                              value={noteMap[submission._id] || ''}
+                              onChange={(e) => setNoteMap(prev => ({ ...prev, [submission._id]: e.target.value }))}
+                              style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '12px', resize: 'vertical' }}
+                            />
+                          </div>
+                        )}
 
                         {/* Action Buttons */}
                         <div style={{ 
@@ -324,7 +348,7 @@ const Home = () => {
                             }}
                             disabled={submission.status === 'accepted'} 
                             style={{
-                              padding: '5px 10px',
+                              padding: '6px 10px',
                               backgroundColor: submission.status === 'accepted' ? '#ccc' : '#4CAF50',
                               color: 'white',
                               border: 'none',
@@ -344,7 +368,7 @@ const Home = () => {
                             }}
                             disabled={submission.status === 'rejected'}
                             style={{
-                              padding: '5px 10px',
+                              padding: '6px 10px',
                               backgroundColor: submission.status === 'rejected' ? '#ccc' : '#f44336',
                               color: 'white',
                               border: 'none',
