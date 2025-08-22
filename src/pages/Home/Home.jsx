@@ -14,7 +14,7 @@ const Home = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [showStats, setShowStats] = useState(false);
   const [stats, setStats] = useState({});
-  const mentorEmail = localStorage.getItem('mentorEmail');
+  const mentorEmail = localStorage.getItem('mentorEmail') || 'mugilanks.23cse@kongu.edu';
 
   // Check for new/pending submissions (notification)
   useEffect(() => {
