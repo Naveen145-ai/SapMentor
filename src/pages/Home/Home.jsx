@@ -14,7 +14,8 @@ const Home = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [showStats, setShowStats] = useState(false);
   const [stats, setStats] = useState({});
-  const mentorEmail = localStorage.getItem('mentorEmail') || 'mugilanks.23cse@kongu.edu';
+  const [mentorEmail, setMentorEmail] = useState('mugilanks.23cse@kongu.edu'); // Allow mentor email input
+  const [emailInputMode, setEmailInputMode] = useState(false);
 
   // Check for new/pending submissions (notification)
   useEffect(() => {
@@ -22,7 +23,8 @@ const Home = () => {
 
     const checkNew = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/mentor/submissions/${mentorEmail}`);
+        const encodedEmail = encodeURIComponent(mentorEmail);
+        const res = await fetch(`http://localhost:8080/api/mentor/submissions/${encodedEmail}`);
         const data = await res.json();
         if (res.ok) {
           const pending = data.some((s) => s.status === 'pending');
@@ -139,10 +141,15 @@ const Home = () => {
 
     const fetchSubmissions = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/mentor/submissions/${mentorEmail}`);
+        console.log('Fetching submissions for mentor:', mentorEmail);
+        const encodedEmail = encodeURIComponent(mentorEmail);
+        const res = await fetch(`http://localhost:8080/api/mentor/submissions/${encodedEmail}`);
         const data = await res.json();
+        
+        console.log('API Response:', res.status, data);
 
         if (res.ok) {
+          console.log('Submissions data:', data);
           const grouped = {};
           data.forEach(sub => {
             if (!grouped[sub.email]) {
@@ -155,12 +162,14 @@ const Home = () => {
           });
           setGroupedSubmissions(grouped);
           setStats(calculateStats(grouped));
+          console.log('Grouped submissions:', grouped);
         } else {
-          alert(data.message || 'No submissions found');
+          console.error('API Error:', data.message);
+          // Don't show alert for debugging
         }
       } catch (error) {
-        console.error(error);
-        alert('Failed to load submissions');
+        console.error('Fetch error:', error);
+        // Don't show alert for debugging
       }
     };
 
@@ -396,7 +405,60 @@ const Home = () => {
         borderRadius: '12px',
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
       }}>
-        <h2 style={{ margin: 0, color: '#1f2937' }}>👨‍🏫 Mentor Dashboard</h2>
+        <div>
+          <h2 style={{ margin: 0, color: '#1f2937' }}>👨‍🏫 Mentor Dashboard - Events SAP Form</h2>
+          <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {emailInputMode ? (
+              <>
+                <input
+                  type="email"
+                  value={mentorEmail}
+                  onChange={(e) => setMentorEmail(e.target.value)}
+                  placeholder="Enter mentor email"
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+                <button
+                  onClick={() => setEmailInputMode(false)}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  ✓ Set
+                </button>
+              </>
+            ) : (
+              <>
+                <span style={{ fontSize: '14px', color: '#6b7280' }}>
+                  📧 {mentorEmail}
+                </span>
+                <button
+                  onClick={() => setEmailInputMode(true)}
+                  style={{
+                    padding: '6px 10px',
+                    backgroundColor: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  ✏️ Change
+                </button>
+              </>
+            )}
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button
             onClick={() => setShowStats(!showStats)}
@@ -787,7 +849,7 @@ const Home = () => {
                                     border: '1px solid #e2e8f0'
                                   }}>
                                     <div style={{ fontWeight: 'bold', color: '#2d3748' }}>{key}:</div>
-                                    <div style={{ color: '#4a5568' }}>{value || 0}</div>
+                                    <div style={{ color: '#4a5568' }}>{typeof value === 'object' ? JSON.stringify(value) : (value || 0)}</div>
                                   </div>
                                 ))}
                               </div>
