@@ -950,15 +950,17 @@ const Home = () => {
                                 <button
                                   onClick={() => {
                                     const eventMarks = {};
-                                    const eventNote = document.getElementById(`note-${submission._id}-${eventIdx}`).value;
+                                    const eventNote = noteMap[eventNoteKey] || '';
                                     
-                                    // Collect marks from all input fields for this event
-                                    Object.keys(event.counts || {}).forEach(countKey => {
-                                      const markInput = document.getElementById(`mark-${submission._id}-${eventIdx}-${countKey}`);
-                                      if (markInput && markInput.value) {
-                                        eventMarks[countKey] = Number(markInput.value);
-                                      }
-                                    });
+                                    // Collect marks from marksMap state instead of DOM
+                                    if (event.values) {
+                                      Object.keys(event.values).forEach(key => {
+                                        const markValue = marksMap[`${eventMarksKey}-${key}`];
+                                        if (markValue) {
+                                          eventMarks[key] = Number(markValue);
+                                        }
+                                      });
+                                    }
                                     
                                     handleEventMarking(submission._id, event.key, eventMarks, eventNote);
                                   }}
