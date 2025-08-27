@@ -411,30 +411,40 @@ const CollegeSAPForm = () => {
           </table>
 
           {/* Student Submitted Proofs */}
-          {selectedStudent.activityData && (
+          {selectedStudent && (
             <div style={{ marginBottom: '20px' }}>
-              <h4 style={{ color: '#000', marginBottom: '10px' }}>📎 Student Submitted Proofs</h4>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <h3># Student Submitted Proofs</h3>
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                 {Object.entries(selectedStudent.activityData).map(([activityType, data]) => (
-                  data.proofs && data.proofs.length > 0 && (
-                    <div key={activityType} style={{ marginBottom: '10px' }}>
+                  data.proofs.length > 0 && (
+                    <div key={activityType} style={{ marginBottom: '15px' }}>
                       <strong>{activityType}:</strong>
-                      <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
-                        {data.proofs.map((proof, idx) => (
-                          <img 
-                            key={idx}
-                            src={proof}
-                            alt={`${activityType} proof ${idx + 1}`}
-                            style={{ 
-                              width: '100px', 
-                              height: '100px', 
-                              objectFit: 'cover', 
-                              border: '1px solid #ccc',
-                              borderRadius: '4px',
-                              cursor: 'pointer'
-                            }}
-                            onClick={() => window.open(proof, '_blank')}
-                          />
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '5px', flexWrap: 'wrap' }}>
+                        {data.proofs.map((proof, index) => (
+                          <div key={index} style={{ textAlign: 'center' }}>
+                            <img
+                              src={`http://localhost:8080${proof}`}
+                              alt={`${activityType} proof ${index + 1}`}
+                              style={{
+                                width: '120px',
+                                height: '120px',
+                                objectFit: 'cover',
+                                border: '2px solid #007bff',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                              }}
+                              onClick={() => window.open(`http://localhost:8080${proof}`, '_blank')}
+                              onError={(e) => {
+                                console.log('Image failed to load:', proof);
+                                e.target.style.border = '2px solid #dc3545';
+                                e.target.alt = 'Failed to load image';
+                              }}
+                            />
+                            <div style={{ fontSize: '12px', marginTop: '5px' }}>
+                              {activityType} proof {index + 1}
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -478,7 +488,9 @@ const CollegeSAPForm = () => {
             <tbody>
               <tr>
                 <td rowSpan="3" style={headerStyle}>1.Paper Presentation</td>
-                <td style={cellStyle}>{selectedStudent?.activityData?.paperPresentation?.count || 0}</td>
+                <td style={{...cellStyle, backgroundColor: '#e3f2fd', fontWeight: 'bold'}}>
+                  {selectedStudent?.activityData?.paperPresentation?.count || 0}
+                </td>
                 <td style={cellStyle}>
                   <input 
                     type="number" 
@@ -525,14 +537,18 @@ const CollegeSAPForm = () => {
               </tr>
               <tr>
                 <td style={headerStyle}>Student marks (count x marks)</td>
-                <td style={cellStyle}>{selectedStudent?.activityData?.paperPresentation?.studentMarks || 0}</td>
+                <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
+                  {selectedStudent?.activityData?.paperPresentation?.studentMarks || 0}
+                </td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
-                <td style={cellStyle}>{selectedStudent?.activityData?.paperPresentation?.studentMarks || 0}</td>
+                <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
+                  {selectedStudent?.activityData?.paperPresentation?.studentMarks || 0}
+                </td>
               </tr>
               <tr>
                 <td style={headerStyle}>Mentor marks (count x marks)</td>
@@ -606,7 +622,9 @@ const CollegeSAPForm = () => {
             <tbody>
               <tr>
                 <td rowSpan="3" style={headerStyle}>2.Project Presentation</td>
-                <td style={cellStyle}>{selectedStudent?.activityData?.projectPresentation?.count || 0}</td>
+                <td style={{...cellStyle, backgroundColor: '#e3f2fd', fontWeight: 'bold'}}>
+                  {selectedStudent?.activityData?.projectPresentation?.count || 0}
+                </td>
                 <td style={cellStyle}>
                   <input 
                     type="number" 
@@ -653,14 +671,18 @@ const CollegeSAPForm = () => {
               </tr>
               <tr>
                 <td style={headerStyle}>Student marks (count x marks)</td>
-                <td style={cellStyle}>{selectedStudent?.activityData?.projectPresentation?.studentMarks || 0}</td>
+                <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
+                  {selectedStudent?.activityData?.projectPresentation?.studentMarks || 0}
+                </td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
                 <td style={cellStyle}>-</td>
-                <td style={cellStyle}>{selectedStudent?.activityData?.projectPresentation?.studentMarks || 0}</td>
+                <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
+                  {selectedStudent?.activityData?.projectPresentation?.studentMarks || 0}
+                </td>
               </tr>
               <tr>
                 <td style={headerStyle}>Mentor marks (count x marks)</td>
