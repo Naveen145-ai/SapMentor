@@ -414,21 +414,21 @@ const Home = () => {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif', backgroundColor: '#000000', minHeight: '100vh', color: '#ffffff' }}>
+    <div style={{ padding: '20px', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif', backgroundColor: '#ffffff', minHeight: '100vh', color: '#000000' }}>
       {/* Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '30px',
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#ffffff',
         padding: '20px',
         borderRadius: '12px',
-        boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
-        border: '1px solid #333333'
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        border: '1px solid #e5e7eb'
       }}>
         <div>
-          <h2 style={{ margin: 0, color: '#ffffff', fontSize: '28px', fontWeight: '700' }}>👨‍🏫 Mentor Dashboard - Events SAP Form</h2>
+          <h2 style={{ margin: 0, color: '#1f2937', fontSize: '28px', fontWeight: '700' }}>👨‍🏫 Mentor Dashboard - Events SAP Form</h2>
           <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             {emailInputMode ? (
               <>
@@ -442,8 +442,8 @@ const Home = () => {
                     border: '1px solid #444444',
                     borderRadius: '6px',
                     fontSize: '14px',
-                    backgroundColor: '#2a2a2a',
-                    color: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    color: '#000000'
                   }}
                 />
                 <button
@@ -463,16 +463,16 @@ const Home = () => {
               </>
             ) : (
               <>
-                <span style={{ fontSize: '14px', color: '#cccccc' }}>
+                <span style={{ fontSize: '14px', color: '#6b7280' }}>
                   📧 {mentorEmail}
                 </span>
                 <button
                   onClick={() => setEmailInputMode(true)}
                   style={{
                     padding: '6px 10px',
-                    backgroundColor: '#2a2a2a',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
+                    backgroundColor: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    color: '#000000',
                     borderRadius: '4px',
                     cursor: 'pointer',
                     fontSize: '12px'
@@ -500,6 +500,24 @@ const Home = () => {
             📊 {showStats ? 'Hide Stats' : 'Show Stats'}
           </button>
           <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => window.location.href = '/college-sap-form'}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#dc2626',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              📋 College SAP Form
+            </button>
             <button
               onClick={exportToCSV}
               style={{
@@ -577,56 +595,56 @@ const Home = () => {
       {/* Statistics Panel */}
       {showStats && (
         <div style={{
-          backgroundColor: '#1a1a1a',
+          backgroundColor: '#ffffff',
           padding: '20px',
           borderRadius: '12px',
           marginBottom: '30px',
-          boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
-          border: '1px solid #333333'
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          border: '1px solid #e5e7eb'
         }}>
-          <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#ffffff', fontSize: '22px', fontWeight: '600' }}>📈 Statistics Overview</h3>
+          <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#1f2937', fontSize: '22px', fontWeight: '600' }}>📈 Statistics Overview</h3>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '16px',
             marginBottom: '20px'
           }}>
-            <div style={{ padding: '16px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #0ea5e9' }}>
+            <div style={{ padding: '16px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #0ea5e9' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0369a1' }}>{stats.totalSubmissions || 0}</div>
               <div style={{ fontSize: '14px', color: '#0369a1' }}>Total Submissions</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#1c1917', borderRadius: '8px', border: '1px solid #f59e0b' }}>
+            <div style={{ padding: '16px', backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #f59e0b' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#d97706' }}>{stats.pendingCount || 0}</div>
               <div style={{ fontSize: '14px', color: '#d97706' }}>Pending Review</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#0f1419', borderRadius: '8px', border: '1px solid #22c55e' }}>
+            <div style={{ padding: '16px', backgroundColor: '#dcfce7', borderRadius: '8px', border: '1px solid #22c55e' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a' }}>{stats.acceptedCount || 0}</div>
               <div style={{ fontSize: '14px', color: '#16a34a' }}>Accepted</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#1f1315', borderRadius: '8px', border: '1px solid #ef4444' }}>
+            <div style={{ padding: '16px', backgroundColor: '#fee2e2', borderRadius: '8px', border: '1px solid #ef4444' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc2626' }}>{stats.rejectedCount || 0}</div>
               <div style={{ fontSize: '14px', color: '#dc2626' }}>Rejected</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#1e1b23', borderRadius: '8px', border: '1px solid #a855f7' }}>
+            <div style={{ padding: '16px', backgroundColor: '#f3e8ff', borderRadius: '8px', border: '1px solid #a855f7' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#9333ea' }}>{stats.totalMarks || 0}</div>
               <div style={{ fontSize: '14px', color: '#9333ea' }}>Total Marks Awarded</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#0c1821', borderRadius: '8px', border: '1px solid #0891b2' }}>
+            <div style={{ padding: '16px', backgroundColor: '#e0f2fe', borderRadius: '8px', border: '1px solid #0891b2' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0e7490' }}>{stats.totalUsers || 0}</div>
               <div style={{ fontSize: '14px', color: '#0e7490' }}>Active Students</div>
             </div>
           </div>
           {stats.categoryStats && Object.keys(stats.categoryStats).length > 0 && (
             <div>
-              <h4 style={{ marginBottom: '12px', color: '#ffffff' }}>📋 Submissions by Category</h4>
+              <h4 style={{ marginBottom: '12px', color: '#374151' }}>📋 Submissions by Category</h4>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 {Object.entries(stats.categoryStats).map(([category, count]) => (
                   <div key={category} style={{
                     padding: '8px 12px',
-                    backgroundColor: '#2a2a2a',
+                    backgroundColor: '#f1f5f9',
                     borderRadius: '6px',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    color: '#000000',
                     fontSize: '14px'
                   }}>
                     <strong>{category}:</strong> {count}
@@ -640,14 +658,14 @@ const Home = () => {
 
       {/* Filters and Search */}
       <div style={{
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#ffffff',
         padding: '20px',
         borderRadius: '12px',
         marginBottom: '30px',
-        boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
-        border: '1px solid #333333'
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        border: '1px solid #e5e7eb'
       }}>
-        <h3 style={{ marginTop: 0, marginBottom: '16px', color: '#ffffff', fontSize: '22px', fontWeight: '600' }}>🔍 Filter & Search</h3>
+        <h3 style={{ marginTop: 0, marginBottom: '16px', color: '#1f2937', fontSize: '22px', fontWeight: '600' }}>🔍 Filter & Search</h3>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -655,7 +673,7 @@ const Home = () => {
           alignItems: 'end'
         }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#cccccc' }}>Search</label>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Search</label>
             <input
               type="text"
               placeholder="Search by name, email, or activity..."
@@ -664,29 +682,29 @@ const Home = () => {
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #444444',
+                border: '1px solid #d1d5db',
                 borderRadius: '6px',
                 fontSize: '14px',
                 boxSizing: 'border-box',
-                backgroundColor: '#2a2a2a',
-                color: '#ffffff'
+                backgroundColor: '#ffffff',
+                color: '#000000'
               }}
             />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#cccccc' }}>Status</label>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Status</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #444444',
+                border: '1px solid #d1d5db',
                 borderRadius: '6px',
                 fontSize: '14px',
                 boxSizing: 'border-box',
-                backgroundColor: '#2a2a2a',
-                color: '#ffffff'
+                backgroundColor: '#ffffff',
+                color: '#000000'
               }}
             >
               <option value="all">All Status</option>
@@ -696,19 +714,19 @@ const Home = () => {
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#cccccc' }}>Category</label>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Category</label>
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #444444',
+                border: '1px solid #d1d5db',
                 borderRadius: '6px',
                 fontSize: '14px',
                 boxSizing: 'border-box',
-                backgroundColor: '#2a2a2a',
-                color: '#ffffff'
+                backgroundColor: '#ffffff',
+                color: '#000000'
               }}
             >
               <option value="all">All Categories</option>
@@ -719,19 +737,19 @@ const Home = () => {
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#cccccc' }}>Sort By</label>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Sort By</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #444444',
+                border: '1px solid #d1d5db',
                 borderRadius: '6px',
                 fontSize: '14px',
                 boxSizing: 'border-box',
-                backgroundColor: '#2a2a2a',
-                color: '#ffffff'
+                backgroundColor: '#ffffff',
+                color: '#000000'
               }}
             >
               <option value="newest">Newest First</option>
@@ -752,12 +770,12 @@ const Home = () => {
               }}
               style={{
                 padding: '6px 12px',
-                backgroundColor: '#2a2a2a',
-                border: '1px solid #444444',
+                backgroundColor: '#f3f4f6',
+                border: '1px solid #d1d5db',
                 borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '14px',
-                color: '#ffffff'
+                color: '#374151'
               }}
             >
              🗑️ Clear Filters
@@ -769,28 +787,28 @@ const Home = () => {
       {/* Submissions */}
       {Object.keys(filteredSubmissions).length === 0 ? (
         <div style={{
-          backgroundColor: '#1a1a1a',
+          backgroundColor: '#ffffff',
           padding: '40px',
           borderRadius: '12px',
           textAlign: 'center',
-          boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
-          border: '1px solid #333333'
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          border: '1px solid #e5e7eb'
         }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
-          <h3 style={{ color: '#cccccc', margin: 0 }}>No submissions found</h3>
-          <p style={{ color: '#888888', marginTop: '8px' }}>Try adjusting your filters or check back later.</p>
+          <h3 style={{ color: '#6b7280', margin: 0 }}>No submissions found</h3>
+          <p style={{ color: '#9ca3af', marginTop: '8px' }}>Try adjusting your filters or check back later.</p>
         </div>
       ) : (
         <div>
           <div style={{
             marginBottom: '20px',
             padding: '12px 16px',
-            backgroundColor: '#1a1a1a',
+            backgroundColor: '#ffffff',
             borderRadius: '8px',
-            boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
-            border: '1px solid #333333',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            border: '1px solid #e5e7eb',
             fontSize: '14px',
-            color: '#cccccc'
+            color: '#6b7280'
           }}>
             Showing {Object.keys(filteredSubmissions).length} students with {Object.values(filteredSubmissions).reduce((total, userData) => total + userData.submissions.length, 0)} submissions
           </div>
@@ -799,16 +817,16 @@ const Home = () => {
             key={email}
             id={userData.submissions.some((s) => s.status === 'pending') ? 'pending-section' : undefined}
             style={{
-              border: '1px solid #333333',
+              border: '1px solid #e5e7eb',
               borderRadius: '12px',
               padding: '24px',
               marginBottom: '24px',
-              backgroundColor: '#1a1a1a',
-              boxShadow: '0 4px 20px rgba(255,255,255,0.1)'
+              backgroundColor: '#ffffff',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
             }}>
             <h3 style={{ 
               marginBottom: '20px', 
-              color: '#ffffff',
+              color: '#2c3e50',
               borderBottom: '2px solid #3178c6',
               paddingBottom: '10px',
               fontSize: '20px',
@@ -839,10 +857,10 @@ const Home = () => {
                       
                       return (
                         <div key={`${submission._id}-${event.key}-${eventIdx}`} style={{
-                          backgroundColor: '#2a2a2a',
+                          backgroundColor: '#ffffff',
                           borderRadius: '12px',
                           padding: '16px',
-                          boxShadow: '0 4px 12px rgba(255,255,255,0.1)',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                           border: `2px solid ${event.status === 'reviewed' ? '#10b981' : event.status === 'rejected' ? '#f44336' : '#f59e0b'}`,
                           position: 'relative',
                           transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out'
@@ -859,11 +877,11 @@ const Home = () => {
                               margin: '0 0 4px 0',
                               fontSize: '14px',
                               fontWeight: 'bold',
-                              color: '#ffffff'
+                              color: '#2d3748'
                             }}>
                               🎯 {event.title}
                             </h5>
-                            <div style={{ fontSize: '12px', color: '#cccccc' }}>
+                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
                               Status: <span style={{
                                 fontWeight: 'bold',
                                 color: event.status === 'reviewed' ? '#10b981' : event.status === 'rejected' ? '#f44336' : '#f59e0b'
