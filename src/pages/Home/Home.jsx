@@ -8,6 +8,27 @@ const Home = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [marksMap, setMarksMap] = useState({});
   const [noteMap, setNoteMap] = useState({});
+
+  // Function to get max points for each activity type
+  const getMaxPointsForActivity = (sectionName, valueIndex) => {
+    const activityPoints = {
+      'Paper Presentation': [2, 5, 10, 20, 30, 50],
+      'Project Presentation': [5, 10, 20, 20, 30, 50],
+      'Techno Managerial Events': [2, 5, 10, 20, 10, 20, 30, 50],
+      'Sports & Games': [2, 10, 20, 50, 5, 20, 40, 100],
+      'Membership': [20, 5, 2],
+      'Leadership/Organizing Events': [30, 20, 10, 10],
+      'VAC/Online Courses': [5, 10, 20, 30],
+      'Project to Paper/Patent/Copyright': [10, 50, 10, 30, 5, 10, 20, 100, 5, 10],
+      'GATE/CAT/Govt Exams': [5, 20, 30, 50],
+      'Placement and Internship': [10, 15, 25],
+      'Entrepreneurship': [30, 10, 20],
+      'Social Activities': [5, 10, 5, 5]
+    };
+    
+    const points = activityPoints[sectionName] || [];
+    return points[valueIndex] || 5; // Default 5 points if not found
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -393,20 +414,21 @@ const Home = () => {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
+    <div style={{ padding: '20px', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif', backgroundColor: '#000000', minHeight: '100vh', color: '#ffffff' }}>
       {/* Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '30px',
-        backgroundColor: 'white',
+        backgroundColor: '#1a1a1a',
         padding: '20px',
         borderRadius: '12px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
+        border: '1px solid #333333'
       }}>
         <div>
-          <h2 style={{ margin: 0, color: '#1f2937' }}>👨‍🏫 Mentor Dashboard - Events SAP Form</h2>
+          <h2 style={{ margin: 0, color: '#ffffff', fontSize: '28px', fontWeight: '700' }}>👨‍🏫 Mentor Dashboard - Events SAP Form</h2>
           <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             {emailInputMode ? (
               <>
@@ -417,9 +439,11 @@ const Home = () => {
                   placeholder="Enter mentor email"
                   style={{
                     padding: '8px 12px',
-                    border: '1px solid #d1d5db',
+                    border: '1px solid #444444',
                     borderRadius: '6px',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    backgroundColor: '#2a2a2a',
+                    color: '#ffffff'
                   }}
                 />
                 <button
@@ -439,15 +463,16 @@ const Home = () => {
               </>
             ) : (
               <>
-                <span style={{ fontSize: '14px', color: '#6b7280' }}>
+                <span style={{ fontSize: '14px', color: '#cccccc' }}>
                   📧 {mentorEmail}
                 </span>
                 <button
                   onClick={() => setEmailInputMode(true)}
                   style={{
                     padding: '6px 10px',
-                    backgroundColor: '#f3f4f6',
-                    border: '1px solid #d1d5db',
+                    backgroundColor: '#2a2a2a',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
                     borderRadius: '4px',
                     cursor: 'pointer',
                     fontSize: '12px'
@@ -552,54 +577,56 @@ const Home = () => {
       {/* Statistics Panel */}
       {showStats && (
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: '#1a1a1a',
           padding: '20px',
           borderRadius: '12px',
           marginBottom: '30px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+          boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
+          border: '1px solid #333333'
         }}>
-          <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#1f2937' }}>📈 Statistics Overview</h3>
+          <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#ffffff', fontSize: '22px', fontWeight: '600' }}>📈 Statistics Overview</h3>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '16px',
             marginBottom: '20px'
           }}>
-            <div style={{ padding: '16px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #0ea5e9' }}>
+            <div style={{ padding: '16px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #0ea5e9' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0369a1' }}>{stats.totalSubmissions || 0}</div>
               <div style={{ fontSize: '14px', color: '#0369a1' }}>Total Submissions</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #f59e0b' }}>
+            <div style={{ padding: '16px', backgroundColor: '#1c1917', borderRadius: '8px', border: '1px solid #f59e0b' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#d97706' }}>{stats.pendingCount || 0}</div>
               <div style={{ fontSize: '14px', color: '#d97706' }}>Pending Review</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#dcfce7', borderRadius: '8px', border: '1px solid #22c55e' }}>
+            <div style={{ padding: '16px', backgroundColor: '#0f1419', borderRadius: '8px', border: '1px solid #22c55e' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a' }}>{stats.acceptedCount || 0}</div>
               <div style={{ fontSize: '14px', color: '#16a34a' }}>Accepted</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#fee2e2', borderRadius: '8px', border: '1px solid #ef4444' }}>
+            <div style={{ padding: '16px', backgroundColor: '#1f1315', borderRadius: '8px', border: '1px solid #ef4444' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc2626' }}>{stats.rejectedCount || 0}</div>
               <div style={{ fontSize: '14px', color: '#dc2626' }}>Rejected</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#f3e8ff', borderRadius: '8px', border: '1px solid #a855f7' }}>
+            <div style={{ padding: '16px', backgroundColor: '#1e1b23', borderRadius: '8px', border: '1px solid #a855f7' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#9333ea' }}>{stats.totalMarks || 0}</div>
               <div style={{ fontSize: '14px', color: '#9333ea' }}>Total Marks Awarded</div>
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#e0f2fe', borderRadius: '8px', border: '1px solid #0891b2' }}>
+            <div style={{ padding: '16px', backgroundColor: '#0c1821', borderRadius: '8px', border: '1px solid #0891b2' }}>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0e7490' }}>{stats.totalUsers || 0}</div>
               <div style={{ fontSize: '14px', color: '#0e7490' }}>Active Students</div>
             </div>
           </div>
           {stats.categoryStats && Object.keys(stats.categoryStats).length > 0 && (
             <div>
-              <h4 style={{ marginBottom: '12px', color: '#374151' }}>📋 Submissions by Category</h4>
+              <h4 style={{ marginBottom: '12px', color: '#ffffff' }}>📋 Submissions by Category</h4>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 {Object.entries(stats.categoryStats).map(([category, count]) => (
                   <div key={category} style={{
                     padding: '8px 12px',
-                    backgroundColor: '#f1f5f9',
+                    backgroundColor: '#2a2a2a',
                     borderRadius: '6px',
-                    border: '1px solid #cbd5e1',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
                     fontSize: '14px'
                   }}>
                     <strong>{category}:</strong> {count}
@@ -613,13 +640,14 @@ const Home = () => {
 
       {/* Filters and Search */}
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: '#1a1a1a',
         padding: '20px',
         borderRadius: '12px',
         marginBottom: '30px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
+        border: '1px solid #333333'
       }}>
-        <h3 style={{ marginTop: 0, marginBottom: '16px', color: '#1f2937' }}>🔍 Filter & Search</h3>
+        <h3 style={{ marginTop: 0, marginBottom: '16px', color: '#ffffff', fontSize: '22px', fontWeight: '600' }}>🔍 Filter & Search</h3>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -627,7 +655,7 @@ const Home = () => {
           alignItems: 'end'
         }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Search</label>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#cccccc' }}>Search</label>
             <input
               type="text"
               placeholder="Search by name, email, or activity..."
@@ -636,25 +664,29 @@ const Home = () => {
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #d1d5db',
+                border: '1px solid #444444',
                 borderRadius: '6px',
                 fontSize: '14px',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                backgroundColor: '#2a2a2a',
+                color: '#ffffff'
               }}
             />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Status</label>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#cccccc' }}>Status</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #d1d5db',
+                border: '1px solid #444444',
                 borderRadius: '6px',
                 fontSize: '14px',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                backgroundColor: '#2a2a2a',
+                color: '#ffffff'
               }}
             >
               <option value="all">All Status</option>
@@ -664,17 +696,19 @@ const Home = () => {
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Category</label>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#cccccc' }}>Category</label>
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #d1d5db',
+                border: '1px solid #444444',
                 borderRadius: '6px',
                 fontSize: '14px',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                backgroundColor: '#2a2a2a',
+                color: '#ffffff'
               }}
             >
               <option value="all">All Categories</option>
@@ -685,17 +719,19 @@ const Home = () => {
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Sort By</label>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#cccccc' }}>Sort By</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #d1d5db',
+                border: '1px solid #444444',
                 borderRadius: '6px',
                 fontSize: '14px',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                backgroundColor: '#2a2a2a',
+                color: '#ffffff'
               }}
             >
               <option value="newest">Newest First</option>
@@ -716,15 +752,15 @@ const Home = () => {
               }}
               style={{
                 padding: '6px 12px',
-                backgroundColor: '#f3f4f6',
-                border: '1px solid #d1d5db',
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #444444',
                 borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '14px',
-                color: '#374151'
+                color: '#ffffff'
               }}
             >
-              🗑️ Clear Filters
+             🗑️ Clear Filters
             </button>
           </div>
         )}
@@ -733,26 +769,28 @@ const Home = () => {
       {/* Submissions */}
       {Object.keys(filteredSubmissions).length === 0 ? (
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: '#1a1a1a',
           padding: '40px',
           borderRadius: '12px',
           textAlign: 'center',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+          boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
+          border: '1px solid #333333'
         }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
-          <h3 style={{ color: '#6b7280', margin: 0 }}>No submissions found</h3>
-          <p style={{ color: '#9ca3af', marginTop: '8px' }}>Try adjusting your filters or check back later.</p>
+          <h3 style={{ color: '#cccccc', margin: 0 }}>No submissions found</h3>
+          <p style={{ color: '#888888', marginTop: '8px' }}>Try adjusting your filters or check back later.</p>
         </div>
       ) : (
         <div>
           <div style={{
             marginBottom: '20px',
             padding: '12px 16px',
-            backgroundColor: 'white',
+            backgroundColor: '#1a1a1a',
             borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            boxShadow: '0 4px 20px rgba(255,255,255,0.1)',
+            border: '1px solid #333333',
             fontSize: '14px',
-            color: '#6b7280'
+            color: '#cccccc'
           }}>
             Showing {Object.keys(filteredSubmissions).length} students with {Object.values(filteredSubmissions).reduce((total, userData) => total + userData.submissions.length, 0)} submissions
           </div>
@@ -761,18 +799,20 @@ const Home = () => {
             key={email}
             id={userData.submissions.some((s) => s.status === 'pending') ? 'pending-section' : undefined}
             style={{
-              border: '1px solid #e5e7eb',
+              border: '1px solid #333333',
               borderRadius: '12px',
               padding: '24px',
               marginBottom: '24px',
-              backgroundColor: 'white',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
+              backgroundColor: '#1a1a1a',
+              boxShadow: '0 4px 20px rgba(255,255,255,0.1)'
             }}>
             <h3 style={{ 
               marginBottom: '20px', 
-              color: '#2c3e50',
+              color: '#ffffff',
               borderBottom: '2px solid #3178c6',
-              paddingBottom: '10px'
+              paddingBottom: '10px',
+              fontSize: '20px',
+              fontWeight: '600'
             }}>
               👤 {userData.userName} ({email})
             </h3>
@@ -799,10 +839,10 @@ const Home = () => {
                       
                       return (
                         <div key={`${submission._id}-${event.key}-${eventIdx}`} style={{
-                          backgroundColor: '#ffffff',
+                          backgroundColor: '#2a2a2a',
                           borderRadius: '12px',
                           padding: '16px',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          boxShadow: '0 4px 12px rgba(255,255,255,0.1)',
                           border: `2px solid ${event.status === 'reviewed' ? '#10b981' : event.status === 'rejected' ? '#f44336' : '#f59e0b'}`,
                           position: 'relative',
                           transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out'
@@ -819,11 +859,11 @@ const Home = () => {
                               margin: '0 0 4px 0',
                               fontSize: '14px',
                               fontWeight: 'bold',
-                              color: '#2d3748'
+                              color: '#ffffff'
                             }}>
                               🎯 {event.title}
                             </h5>
-                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                            <div style={{ fontSize: '12px', color: '#cccccc' }}>
                               Status: <span style={{
                                 fontWeight: 'bold',
                                 color: event.status === 'reviewed' ? '#10b981' : event.status === 'rejected' ? '#f44336' : '#f59e0b'
@@ -947,6 +987,93 @@ const Home = () => {
                                     marginBottom: '8px'
                                   }}
                                 />
+                                {submission.activities && submission.activities.map((activity, activityIndex) => (
+                                  <div key={activityIndex} className="sap-activity-section">
+                                    <h4>📋 {activity.section}</h4>
+                                    
+                                    {/* Recreate the same table structure as student form */}
+                                    <div className="sap-table-container">
+                                      <table className="sap-activity-table">
+                                        <thead>
+                                          <tr>
+                                            <th>S.No</th>
+                                            <th>Activity Details</th>
+                                            <th>Student Input</th>
+                                            <th>Max Points</th>
+                                            <th>Mentor Marks</th>
+                                            <th>Notes</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {activity.values && activity.values.map((value, valueIndex) => {
+                                            const marksKey = `${submission._id}-${activityIndex}-${valueIndex}`;
+                                            const noteKey = `${submission._id}-${activityIndex}-${valueIndex}-note`;
+                                            
+                                            return (
+                                              <tr key={valueIndex}>
+                                                <td>{valueIndex + 1}</td>
+                                                <td className="activity-description">
+                                                  {value.placeholder || `Activity ${valueIndex + 1}`}
+                                                </td>
+                                                <td className="student-input">
+                                                  <div className="input-display">
+                                                    {value.value || 'No input provided'}
+                                                  </div>
+                                                </td>
+                                                <td className="max-points">
+                                                  {getMaxPointsForActivity(activity.section, valueIndex)}
+                                                </td>
+                                                <td className="mentor-marks">
+                                                  <input
+                                                    type="number"
+                                                    min="0"
+                                                    max={getMaxPointsForActivity(activity.section, valueIndex)}
+                                                    placeholder="0"
+                                                    value={marksMap[marksKey] || ''}
+                                                    onChange={(e) => setMarksMap(prev => ({
+                                                      ...prev,
+                                                      [marksKey]: e.target.value
+                                                    }))}
+                                                    className="marks-input-field"
+                                                  />
+                                                </td>
+                                                <td className="mentor-notes">
+                                                  <textarea
+                                                    placeholder="Add notes..."
+                                                    value={noteMap[noteKey] || ''}
+                                                    onChange={(e) => setNoteMap(prev => ({
+                                                      ...prev,
+                                                      [noteKey]: e.target.value
+                                                    }))}
+                                                    className="notes-textarea-field"
+                                                    rows="2"
+                                                  />
+                                                </td>
+                                              </tr>
+                                            );
+                                          })}
+                                        </tbody>
+                                      </table>
+                                      
+                                      {/* Activity Summary */}
+                                      <div className="activity-summary">
+                                        <div className="summary-row">
+                                          <span className="summary-label">Total Student Inputs:</span>
+                                          <span className="summary-value">{activity.values?.length || 0}</span>
+                                        </div>
+                                        <div className="summary-row">
+                                          <span className="summary-label">Total Mentor Marks:</span>
+                                          <span className="summary-value">
+                                            {activity.values?.reduce((sum, _, idx) => {
+                                              const marksKey = `${submission._id}-${activityIndex}-${idx}`;
+                                              return sum + (Number(marksMap[marksKey]) || 0);
+                                            }, 0) || 0}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
                                 <button
                                   onClick={() => {
                                     const eventMarks = {};
