@@ -20,17 +20,111 @@ const CollegeSAPForm = () => {
             if (!grouped[sub.email]) {
               grouped[sub.email] = {
                 email: sub.email,
-                name: sub.userName || sub.name || 'Unknown User',
-                rollNumber: sub.rollNumber || '',
-                year: sub.year || '',
-                section: sub.section || '',
-                semester: sub.semester || '',
-                submissions: []
+                name: 'Unknown User',
+                rollNumber: '',
+                year: '',
+                section: '',
+                semester: '',
+                submissions: [],
+                activityData: {
+                  paperPresentation: { count: 0, studentMarks: 0, proofs: [] },
+                  projectPresentation: { count: 0, studentMarks: 0, proofs: [] },
+                  technoManagerial: { count: 0, studentMarks: 0, proofs: [] },
+                  sportsGames: { count: 0, studentMarks: 0, proofs: [] }
+                }
               };
             }
+            
+            // Update student info from any submission that has data
+            if (sub.name && sub.name.trim() !== '') {
+              grouped[sub.email].name = sub.name;
+            }
+            if (sub.userName && sub.userName.trim() !== '') {
+              grouped[sub.email].name = sub.userName;
+            }
+            if (sub.studentName && sub.studentName.trim() !== '') {
+              grouped[sub.email].name = sub.studentName;
+            }
+            
+            // Extract student details from various sources
+            if (sub.rollNumber) grouped[sub.email].rollNumber = sub.rollNumber;
+            if (sub.year) grouped[sub.email].year = sub.year;
+            if (sub.section) grouped[sub.email].section = sub.section;
+            if (sub.semester) grouped[sub.email].semester = sub.semester;
+            
+            if (sub.details) {
+              if (sub.details.rollNumber) grouped[sub.email].rollNumber = sub.details.rollNumber;
+              if (sub.details.year) grouped[sub.email].year = sub.details.year;
+              if (sub.details.section) grouped[sub.email].section = sub.details.section;
+              if (sub.details.semester) grouped[sub.email].semester = sub.details.semester;
+              if (sub.details.name) grouped[sub.email].name = sub.details.name;
+              if (sub.details.studentName) grouped[sub.email].name = sub.details.studentName;
+            }
             grouped[sub.email].submissions.push(sub);
+            
+            // Parse student data from submissions
+            if (sub.events && Array.isArray(sub.events) && sub.events.length > 0) {
+              sub.events.forEach(event => {
+                console.log('Processing event:', event);
+                const activityType = getActivityTypeFromEvent(event.key || event.title || '');
+                if (activityType && grouped[sub.email].activityData[activityType]) {
+                  // Parse counts from event values
+                  let eventCount = 0;
+                  let eventMarks = 0;
+                  
+                  if (event.values) {
+                    // Handle different value formats
+                    if (typeof event.values === 'object' && event.values !== null) {
+                      Object.values(event.values).forEach(val => {
+                        if (typeof val === 'number' && val > 0) {
+                          eventCount += val;
+                        } else if (typeof val === 'string' && !isNaN(val) && val.trim() !== '') {
+                          eventCount += parseInt(val);
+                        }
+                      });
+                    } else if (typeof event.values === 'number' && event.values > 0) {
+                      eventCount = event.values;
+                    } else if (typeof event.values === 'string' && !isNaN(event.values) && event.values.trim() !== '') {
+                      eventCount = parseInt(event.values);
+                    }
+                  }
+                  
+                  // If no values, check if there's a count field
+                  if (eventCount === 0 && event.count) {
+                    eventCount = parseInt(event.count) || 0;
+                  }
+                  
+                  // Calculate marks based on activity type and count
+                  eventMarks = calculateStudentMarks(activityType, event.key || event.title || '', eventCount);
+                  
+                  grouped[sub.email].activityData[activityType].count += eventCount;
+                  grouped[sub.email].activityData[activityType].studentMarks += eventMarks;
+                  
+                  // Add proof URLs from event
+                  if (event.proofUrls && event.proofUrls.length > 0) {
+                    grouped[sub.email].activityData[activityType].proofs.push(...event.proofUrls);
+                  }
+                }
+              });
+            }
+            
+            // Also check submission-level proofUrls
+            if (sub.proofUrls && sub.proofUrls.length > 0) {
+              // Try to determine activity type from submission activity field
+              const activityType = getActivityTypeFromEvent(sub.activity || '');
+              if (activityType && grouped[sub.email].activityData[activityType]) {
+                grouped[sub.email].activityData[activityType].proofs.push(...sub.proofUrls);
+              } else {
+                // Add to all activity types if can't determine specific type
+                Object.keys(grouped[sub.email].activityData).forEach(type => {
+                  grouped[sub.email].activityData[type].proofs.push(...sub.proofUrls);
+                });
+              }
+            }
           });
           setStudents(Object.values(grouped));
+          console.log('Processed students with activity data:', Object.values(grouped));
+          console.log('Raw submission data:', data);
         }
       } catch (error) {
         console.error('Error fetching students:', error);
@@ -67,6 +161,37 @@ const CollegeSAPForm = () => {
       total += calculateCategoryTotal(activityType, cat.key);
     });
     return total;
+  };
+
+  // Map event keys to activity types
+  const getActivityTypeFromEvent = (eventKey) => {
+    const key = eventKey.toLowerCase();
+    if (key.includes('paper')) return 'paperPresentation';
+    if (key.includes('project')) return 'projectPresentation';
+    if (key.includes('techno') || key.includes('managerial')) return 'technoManagerial';
+    if (key.includes('sports') || key.includes('games')) return 'sportsGames';
+    return null;
+  };
+  
+  // Calculate student marks based on activity type and event
+  const calculateStudentMarks = (activityType, eventKey, count) => {
+    const key = eventKey.toLowerCase();
+    
+    if (activityType === 'paperPresentation') {
+      if (key.includes('inside')) return count * 5;
+      if (key.includes('outside') || key.includes('zone')) return count * 20;
+      if (key.includes('state')) return count * 40;
+      if (key.includes('national') || key.includes('international')) return count * 50;
+    }
+    
+    if (activityType === 'projectPresentation') {
+      if (key.includes('inside')) return count * 10;
+      if (key.includes('outside') || key.includes('zone')) return count * 15;
+      if (key.includes('state')) return count * 20;
+      if (key.includes('national') || key.includes('international')) return count * 100;
+    }
+    
+    return count * 5; // Default marks
   };
 
   // Get categories for each activity type
@@ -112,22 +237,46 @@ const CollegeSAPForm = () => {
     return categories[activityType] || [];
   };
 
-  // Save marks
+  // Save marks and update student submissions
   const saveStudentMarks = async () => {
     if (!selectedStudent) return;
 
     try {
-      const totalMarks = calculateActivityTotal('paperPresentation') + 
-                        calculateActivityTotal('projectPresentation') + 
-                        calculateActivityTotal('technoManagerial') + 
-                        calculateActivityTotal('sportsGames');
+      // Calculate mentor total marks
+      const mentorMarks = {
+        paperPresentation: studentMarks[`${selectedStudent.email}_paperPresentation_mentor_marks`]?.marks || 0,
+        projectPresentation: studentMarks[`${selectedStudent.email}_projectPresentation_mentor_marks`]?.marks || 0,
+        technoManagerial: studentMarks[`${selectedStudent.email}_technoManagerial_mentor_marks`]?.marks || 0,
+        sportsGames: studentMarks[`${selectedStudent.email}_sportsGames_mentor_marks`]?.marks || 0
+      };
 
+      const totalMentorMarks = Object.values(mentorMarks).reduce((sum, mark) => sum + mark, 0);
+
+      // Update each submission with mentor marks
+      for (const submission of selectedStudent.submissions) {
+        const updateRes = await fetch(`http://localhost:8080/api/mentor/update-status/${submission._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'accepted',
+            marksAwarded: totalMentorMarks,
+            decisionNote: `Mentor evaluated marks: ${totalMentorMarks}`
+          })
+        });
+
+        if (!updateRes.ok) {
+          console.error('Failed to update submission:', submission._id);
+        }
+      }
+
+      // Save SAP marks data
       const marksData = {
         studentEmail: selectedStudent.email,
         studentName: selectedStudent.name,
         mentorEmail: mentorEmail,
         marks: studentMarks,
-        totalMarks: totalMarks,
+        mentorMarks: mentorMarks,
+        totalMarks: totalMentorMarks,
         updatedAt: new Date().toISOString()
       };
 
@@ -138,7 +287,9 @@ const CollegeSAPForm = () => {
       });
 
       if (res.ok) {
-        alert('Marks saved successfully!');
+        alert(`Marks saved successfully! Total mentor marks: ${totalMentorMarks}`);
+        // Refresh student data
+        window.location.reload();
       } else {
         alert('Failed to save marks');
       }
@@ -259,6 +410,40 @@ const CollegeSAPForm = () => {
             </tbody>
           </table>
 
+          {/* Student Submitted Proofs */}
+          {selectedStudent.activityData && (
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ color: '#000', marginBottom: '10px' }}>📎 Student Submitted Proofs</h4>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {Object.entries(selectedStudent.activityData).map(([activityType, data]) => (
+                  data.proofs && data.proofs.length > 0 && (
+                    <div key={activityType} style={{ marginBottom: '10px' }}>
+                      <strong>{activityType}:</strong>
+                      <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                        {data.proofs.map((proof, idx) => (
+                          <img 
+                            key={idx}
+                            src={proof}
+                            alt={`${activityType} proof ${idx + 1}`}
+                            style={{ 
+                              width: '100px', 
+                              height: '100px', 
+                              objectFit: 'cover', 
+                              border: '1px solid #ccc',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                            onClick={() => window.open(proof, '_blank')}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Paper Presentation */}
           <table style={tableStyle}>
             <thead>
@@ -293,7 +478,7 @@ const CollegeSAPForm = () => {
             <tbody>
               <tr>
                 <td rowSpan="3" style={headerStyle}>1.Paper Presentation</td>
-                <td style={cellStyle}>2</td>
+                <td style={cellStyle}>{selectedStudent?.activityData?.paperPresentation?.count || 0}</td>
                 <td style={cellStyle}>
                   <input 
                     type="number" 
@@ -339,46 +524,38 @@ const CollegeSAPForm = () => {
                 <td style={cellStyle}>{calculateActivityTotal('paperPresentation')}</td>
               </tr>
               <tr>
-                <td style={headerStyle}>Count</td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_paperPresentation_presented_inside`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_paperPresentation_presented_outside`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_paperPresentation_presented_premier`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_paperPresentation_prize_inside`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_paperPresentation_prize_outside`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_paperPresentation_prize_premier`]?.count || 0}
-                </td>
-                <td style={cellStyle}></td>
-              </tr>
-              <tr>
                 <td style={headerStyle}>Student marks (count x marks)</td>
-                <td style={cellStyle}>{calculateCategoryTotal('paperPresentation', 'presented_inside')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('paperPresentation', 'presented_outside')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('paperPresentation', 'presented_premier')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('paperPresentation', 'prize_inside')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('paperPresentation', 'prize_outside')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('paperPresentation', 'prize_premier')}</td>
-                <td style={cellStyle}></td>
+                <td style={cellStyle}>{selectedStudent?.activityData?.paperPresentation?.studentMarks || 0}</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>{selectedStudent?.activityData?.paperPresentation?.studentMarks || 0}</td>
               </tr>
               <tr>
                 <td style={headerStyle}>Mentor marks (count x marks)</td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
+                <td style={cellStyle}>
+                  <input 
+                    type="number" 
+                    style={inputStyle}
+                    placeholder="Enter marks"
+                    onChange={(e) => setStudentMarks(prev => ({
+                      ...prev,
+                      [`${selectedStudent.email}_paperPresentation_mentor_marks`]: {
+                        marks: parseInt(e.target.value) || 0
+                      }
+                    }))}
+                  />
+                </td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>{studentMarks[`${selectedStudent.email}_paperPresentation_mentor_marks`]?.marks || 0}</td>
               </tr>
               <tr>
                 <td style={headerStyle}>Proof page number</td>
@@ -429,7 +606,7 @@ const CollegeSAPForm = () => {
             <tbody>
               <tr>
                 <td rowSpan="3" style={headerStyle}>2.Project Presentation</td>
-                <td style={cellStyle}>5</td>
+                <td style={cellStyle}>{selectedStudent?.activityData?.projectPresentation?.count || 0}</td>
                 <td style={cellStyle}>
                   <input 
                     type="number" 
@@ -475,49 +652,42 @@ const CollegeSAPForm = () => {
                 <td style={cellStyle}>{calculateActivityTotal('projectPresentation')}</td>
               </tr>
               <tr>
-                <td style={headerStyle}>Count</td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_projectPresentation_presented_inside`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_projectPresentation_presented_outside`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_projectPresentation_presented_premier`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_projectPresentation_prize_inside`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_projectPresentation_prize_outside`]?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  {studentMarks[`${selectedStudent.email}_projectPresentation_prize_premier`]?.count || 0}
-                </td>
-                <td style={cellStyle}></td>
-              </tr>
-              <tr>
                 <td style={headerStyle}>Student marks (count x marks)</td>
-                <td style={cellStyle}>{calculateCategoryTotal('projectPresentation', 'presented_inside')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('projectPresentation', 'presented_outside')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('projectPresentation', 'presented_premier')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('projectPresentation', 'prize_inside')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('projectPresentation', 'prize_outside')}</td>
-                <td style={cellStyle}>{calculateCategoryTotal('projectPresentation', 'prize_premier')}</td>
-                <td style={cellStyle}></td>
+                <td style={cellStyle}>{selectedStudent?.activityData?.projectPresentation?.studentMarks || 0}</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>{selectedStudent?.activityData?.projectPresentation?.studentMarks || 0}</td>
               </tr>
               <tr>
                 <td style={headerStyle}>Mentor marks (count x marks)</td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
+                <td style={cellStyle}>
+                  <input 
+                    type="number" 
+                    style={inputStyle}
+                    placeholder="Enter marks"
+                    onChange={(e) => setStudentMarks(prev => ({
+                      ...prev,
+                      [`${selectedStudent.email}_projectPresentation_mentor_marks`]: {
+                        marks: parseInt(e.target.value) || 0
+                      }
+                    }))}
+                  />
+                </td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>-</td>
+                <td style={cellStyle}>{studentMarks[`${selectedStudent.email}_projectPresentation_mentor_marks`]?.marks || 0}</td>
               </tr>
               <tr>
                 <td style={headerStyle}>Proof page number</td>
+                <td style={cellStyle}></td>
                 <td style={cellStyle}></td>
                 <td style={cellStyle}></td>
                 <td style={cellStyle}></td>
