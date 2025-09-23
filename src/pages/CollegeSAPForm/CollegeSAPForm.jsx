@@ -1,5 +1,138 @@
 import React, { useState, useEffect } from 'react';
 
+// Top-level pure helpers so they are always in scope
+const getEventConfig = (key) => {
+  const k = (key || '').toLowerCase();
+  if (k.includes('paper')) {
+    return {
+      title: '1. Paper Presentation',
+      columns: [
+        { key: 'insidePresented', label: 'Inside', points: 5 },
+        { key: 'outsidePresented', label: 'Outside', points: 10 },
+        { key: 'premierPresented', label: 'Premier', points: 20 },
+        { key: 'insidePrize', label: 'Inside', points: 20 },
+        { key: 'outsidePrize', label: 'Outside', points: 30 },
+        { key: 'premierPrize', label: 'Premier', points: 50 },
+      ],
+      maxPoints: 75,
+      headerGroups: [
+        { title: 'Presented', span: 3 },
+        { title: 'Prize', span: 3 },
+      ],
+    };
+  }
+  if (k.includes('project')) {
+    return {
+      title: '2. Project Presentation',
+      columns: [
+        { key: 'insidePresented', label: 'Inside', points: 10 },
+        { key: 'outsidePresented', label: 'Outside', points: 15 },
+        { key: 'premierPresented', label: 'Premier', points: 20 },
+        { key: 'insidePrize', label: 'Inside', points: 20 },
+        { key: 'outsidePrize', label: 'Outside', points: 30 },
+        { key: 'premierPrize', label: 'Premier', points: 50 },
+      ],
+      maxPoints: 100,
+      headerGroups: [
+        { title: 'Presented', span: 3 },
+        { title: 'Prize', span: 3 },
+      ],
+    };
+  }
+  return null;
+};
+
+const renderStructuredEventTable = (ev, tableStyle, headerStyle, cellStyle, inputStyle) => {
+  const cfg = getEventConfig(ev.key || ev.title || '');
+  if (!cfg) return null;
+  const counts = ev.values?.counts || {};
+  const student = ev.values?.studentMarks || {};
+  return (
+    <table style={{ ...tableStyle, marginTop: '20px' }} key={ev.key}>
+      <thead>
+        <tr>
+          <td rowSpan="3" style={headerStyle}>Activity</td>
+          <td style={headerStyle}>Submitted</td>
+          <td colSpan="3" style={headerStyle}>Presented</td>
+          <td colSpan="3" style={headerStyle}>Prize</td>
+          <td style={headerStyle}>Max Points</td>
+        </tr>
+        <tr>
+          <td style={headerStyle}></td>
+          <td style={headerStyle}>Inside</td>
+          <td style={headerStyle}>Outside</td>
+          <td style={headerStyle}>Premier</td>
+          <td style={headerStyle}>Inside</td>
+          <td style={headerStyle}>Outside</td>
+          <td style={headerStyle}>Premier</td>
+          <td style={headerStyle}></td>
+        </tr>
+        <tr>
+          <td style={headerStyle}></td>
+          {cfg.columns.slice(0,3).map(c => (
+            <td key={`pp-${c.key}`} style={headerStyle}>{c.points}</td>
+          ))}
+          {cfg.columns.slice(3).map(c => (
+            <td key={`pz-${c.key}`} style={headerStyle}>{c.points}</td>
+          ))}
+          <td style={headerStyle}>{cfg.maxPoints}</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowSpan="3" style={headerStyle}>{cfg.title}</td>
+          <td style={{...cellStyle, backgroundColor: '#e3f2fd', fontWeight: 'bold'}}>
+            {cfg.columns.reduce((s, c) => s + (parseInt(counts[c.key] || 0) || 0), 0)}
+          </td>
+          {cfg.columns.map(c => (
+            <td key={`cnt-${c.key}`} style={cellStyle}>{counts[c.key] || 0}</td>
+          ))}
+          <td style={cellStyle}></td>
+        </tr>
+        <tr>
+          <td style={headerStyle}>Student marks (count x marks)</td>
+          <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
+            {cfg.columns.reduce((s, c) => s + (parseInt(student[c.key] || 0) || 0), 0)}
+          </td>
+          {cfg.columns.map(c => (
+            <td key={`sm-${c.key}`} style={cellStyle}>{student[c.key] || 0}</td>
+          ))}
+          <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
+            {cfg.columns.reduce((s, c) => s + (parseInt(student[c.key] || 0) || 0), 0)}
+          </td>
+        </tr>
+        <tr>
+          <td style={headerStyle}>Mentor marks (count x marks)</td>
+          <td style={cellStyle}>
+            <input type="number" style={inputStyle} placeholder="Enter marks" />
+          </td>
+          {cfg.columns.map(c => (
+            <td key={`mm-${c.key}`} style={cellStyle}>-</td>
+          ))}
+          <td style={cellStyle}>0</td>
+        </tr>
+        <tr>
+          <td style={headerStyle}>Proof page number</td>
+          <td style={cellStyle}></td>
+          {cfg.columns.map(c => (
+            <td key={`pf-${c.key}`} style={cellStyle}></td>
+          ))}
+          <td style={cellStyle}></td>
+        </tr>
+      </tbody>
+    </table>
+  );
+};
+
+const getSelectedStudentEvents = (selectedStudent) => {
+  if (!selectedStudent) return [];
+  const subs = selectedStudent.submissions || [];
+  const indiv = subs
+    .filter(s => s.category === 'individualEvents')
+    .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0];
+  return indiv?.events || [];
+};
+
 const CollegeSAPForm = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -33,6 +166,139 @@ const CollegeSAPForm = () => {
                   sportsGames: { count: 0, studentMarks: 0, proofs: [] }
                 }
               };
+
+  // Helpers: event config and renderers for structured tables
+  const getEventConfig = (key) => {
+    const k = (key || '').toLowerCase();
+    if (k.includes('paper')) {
+      return {
+        title: '1. Paper Presentation',
+        columns: [
+          { key: 'insidePresented', label: 'Inside', points: 5 },
+          { key: 'outsidePresented', label: 'Outside', points: 10 },
+          { key: 'premierPresented', label: 'Premier', points: 20 },
+          { key: 'insidePrize', label: 'Inside', points: 20 },
+          { key: 'outsidePrize', label: 'Outside', points: 30 },
+          { key: 'premierPrize', label: 'Premier', points: 50 },
+        ],
+        maxPoints: 75,
+        headerGroups: [
+          { title: 'Presented', span: 3 },
+          { title: 'Prize', span: 3 },
+        ],
+      };
+    }
+    if (k.includes('project')) {
+      return {
+        title: '2. Project Presentation',
+        columns: [
+          { key: 'insidePresented', label: 'Inside', points: 10 },
+          { key: 'outsidePresented', label: 'Outside', points: 15 },
+          { key: 'premierPresented', label: 'Premier', points: 20 },
+          { key: 'insidePrize', label: 'Inside', points: 20 },
+          { key: 'outsidePrize', label: 'Outside', points: 30 },
+          { key: 'premierPrize', label: 'Premier', points: 50 },
+        ],
+        maxPoints: 100,
+        headerGroups: [
+          { title: 'Presented', span: 3 },
+          { title: 'Prize', span: 3 },
+        ],
+      };
+    }
+    return null;
+  };
+
+  const renderStructuredEventTable = (ev) => {
+    const cfg = getEventConfig(ev.key || ev.title || '');
+    if (!cfg) return null;
+    const counts = ev.values?.counts || {};
+    const student = ev.values?.studentMarks || {};
+    return (
+      <table style={{ ...tableStyle, marginTop: '20px' }} key={ev.key}>
+        <thead>
+          <tr>
+            <td rowSpan="3" style={headerStyle}>Activity</td>
+            <td style={headerStyle}>Submitted</td>
+            <td colSpan="3" style={headerStyle}>Presented</td>
+            <td colSpan="3" style={headerStyle}>Prize</td>
+            <td style={headerStyle}>Max Points</td>
+          </tr>
+          <tr>
+            <td style={headerStyle}></td>
+            <td style={headerStyle}>Inside</td>
+            <td style={headerStyle}>Outside</td>
+            <td style={headerStyle}>Premier</td>
+            <td style={headerStyle}>Inside</td>
+            <td style={headerStyle}>Outside</td>
+            <td style={headerStyle}>Premier</td>
+            <td style={headerStyle}></td>
+          </tr>
+          <tr>
+            <td style={headerStyle}></td>
+            {cfg.columns.slice(0,3).map(c => (
+              <td key={`pp-${c.key}`} style={headerStyle}>{c.points}</td>
+            ))}
+            {cfg.columns.slice(3).map(c => (
+              <td key={`pz-${c.key}`} style={headerStyle}>{c.points}</td>
+            ))}
+            <td style={headerStyle}>{cfg.maxPoints}</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td rowSpan="3" style={headerStyle}>{cfg.title}</td>
+            <td style={{...cellStyle, backgroundColor: '#e3f2fd', fontWeight: 'bold'}}>
+              {cfg.columns.reduce((s, c) => s + (parseInt(counts[c.key] || 0) || 0), 0)}
+            </td>
+            {cfg.columns.map(c => (
+              <td key={`cnt-${c.key}`} style={cellStyle}>{counts[c.key] || 0}</td>
+            ))}
+            <td style={cellStyle}></td>
+          </tr>
+          <tr>
+            <td style={headerStyle}>Student marks (count x marks)</td>
+            <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
+              {cfg.columns.reduce((s, c) => s + (parseInt(student[c.key] || 0) || 0), 0)}
+            </td>
+            {cfg.columns.map(c => (
+              <td key={`sm-${c.key}`} style={cellStyle}>{student[c.key] || 0}</td>
+            ))}
+            <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
+              {cfg.columns.reduce((s, c) => s + (parseInt(student[c.key] || 0) || 0), 0)}
+            </td>
+          </tr>
+          <tr>
+            <td style={headerStyle}>Mentor marks (count x marks)</td>
+            <td style={cellStyle}>
+              <input type="number" style={inputStyle} placeholder="Enter marks" />
+            </td>
+            {cfg.columns.map(c => (
+              <td key={`mm-${c.key}`} style={cellStyle}>-</td>
+            ))}
+            <td style={cellStyle}>0</td>
+          </tr>
+          <tr>
+            <td style={headerStyle}>Proof page number</td>
+            <td style={cellStyle}></td>
+            {cfg.columns.map(c => (
+              <td key={`pf-${c.key}`} style={cellStyle}></td>
+            ))}
+            <td style={cellStyle}></td>
+          </tr>
+        </tbody>
+      </table>
+    );
+  };
+
+  const getSelectedStudentEvents = () => {
+    if (!selectedStudent) return [];
+    const subs = selectedStudent.submissions || [];
+    const indiv = subs
+      .filter(s => s.category === 'individualEvents')
+      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0];
+    return indiv?.events || [];
+  };
             }
             
             // Update student info from any submission that has data
@@ -410,39 +676,29 @@ const CollegeSAPForm = () => {
             </tbody>
           </table>
 
-          {/* Student Submitted Proofs */}
-          {selectedStudent && (
-            <div style={{ marginBottom: '20px' }}>
-              <h3># Student Submitted Proofs</h3>
+          {/* Student Submitted Proofs (from latest individualEvents submission) */}
+          <div style={{ marginBottom: '20px' }}>
+            <h3># Student Submitted Proofs</h3>
+            {getSelectedStudentEvents().length === 0 ? (
+              <div style={{ color: '#888' }}>No proofs uploaded.</div>
+            ) : (
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                {Object.entries(selectedStudent.activityData).map(([activityType, data]) => (
-                  data.proofs.length > 0 && (
-                    <div key={activityType} style={{ marginBottom: '15px' }}>
-                      <strong>{activityType}:</strong>
+                {getSelectedStudentEvents().map((ev, idx) => (
+                  ev.proofUrls && ev.proofUrls.length > 0 && (
+                    <div key={ev.key || idx} style={{ marginBottom: '15px' }}>
+                      <strong>{ev.title || ev.key}:</strong>
                       <div style={{ display: 'flex', gap: '10px', marginTop: '5px', flexWrap: 'wrap' }}>
-                        {data.proofs.map((proof, index) => (
+                        {ev.proofUrls.map((proof, index) => (
                           <div key={index} style={{ textAlign: 'center' }}>
                             <img
                               src={`http://localhost:8080${proof}`}
-                              alt={`${activityType} proof ${index + 1}`}
-                              style={{
-                                width: '120px',
-                                height: '120px',
-                                objectFit: 'cover',
-                                border: '2px solid #007bff',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                              }}
+                              alt={`${ev.key} proof ${index + 1}`}
+                              style={{ width: '120px', height: '120px', objectFit: 'cover', border: '2px solid #007bff', borderRadius: '8px', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                               onClick={() => window.open(`http://localhost:8080${proof}`, '_blank')}
-                              onError={(e) => {
-                                console.log('Image failed to load:', proof);
-                                e.target.style.border = '2px solid #dc3545';
-                                e.target.alt = 'Failed to load image';
-                              }}
+                              onError={(e) => { e.target.style.border = '2px solid #dc3545'; e.target.alt = 'Failed to load image'; }}
                             />
                             <div style={{ fontSize: '12px', marginTop: '5px' }}>
-                              {activityType} proof {index + 1}
+                              {ev.key} proof {index + 1}
                             </div>
                           </div>
                         ))}
@@ -451,275 +707,15 @@ const CollegeSAPForm = () => {
                   )
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* Render structured tables for each event in latest individualEvents submission */}
+          {getSelectedStudentEvents().map((ev, idx) => (
+            <div key={ev.key || idx}>
+              {renderStructuredEventTable(ev)}
             </div>
-          )}
-
-          {/* Paper Presentation */}
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <td rowSpan="3" style={headerStyle}>Activity</td>
-                <td style={headerStyle}>Submitted</td>
-                <td colSpan="3" style={headerStyle}>Presented</td>
-                <td colSpan="3" style={headerStyle}>Prize</td>
-                <td style={headerStyle}>Max Points</td>
-              </tr>
-              <tr>
-                <td style={headerStyle}></td>
-                <td style={headerStyle}>Inside</td>
-                <td style={headerStyle}>Outside</td>
-                <td style={headerStyle}>Premier</td>
-                <td style={headerStyle}>Inside</td>
-                <td style={headerStyle}>Outside</td>
-                <td style={headerStyle}>Premier</td>
-                <td style={headerStyle}></td>
-              </tr>
-              <tr>
-                <td style={headerStyle}></td>
-                <td style={headerStyle}>5</td>
-                <td style={headerStyle}>10</td>
-                <td style={headerStyle}>20</td>
-                <td style={headerStyle}>20</td>
-                <td style={headerStyle}>30</td>
-                <td style={headerStyle}>50</td>
-                <td style={headerStyle}>75</td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td rowSpan="3" style={headerStyle}>1.Paper Presentation</td>
-                <td style={{...cellStyle, backgroundColor: '#e3f2fd', fontWeight: 'bold'}}>
-                  {selectedStudent?.activityData?.paperPresentation?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('paperPresentation', 'presented_inside', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('paperPresentation', 'presented_outside', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('paperPresentation', 'presented_premier', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('paperPresentation', 'prize_inside', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('paperPresentation', 'prize_outside', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('paperPresentation', 'prize_premier', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>{calculateActivityTotal('paperPresentation')}</td>
-              </tr>
-              <tr>
-                <td style={headerStyle}>Student marks (count x marks)</td>
-                <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
-                  {selectedStudent?.activityData?.paperPresentation?.studentMarks || 0}
-                </td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
-                  {selectedStudent?.activityData?.paperPresentation?.studentMarks || 0}
-                </td>
-              </tr>
-              <tr>
-                <td style={headerStyle}>Mentor marks (count x marks)</td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    placeholder="Enter marks"
-                    onChange={(e) => setStudentMarks(prev => ({
-                      ...prev,
-                      [`${selectedStudent.email}_paperPresentation_mentor_marks`]: {
-                        marks: parseInt(e.target.value) || 0
-                      }
-                    }))}
-                  />
-                </td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>{studentMarks[`${selectedStudent.email}_paperPresentation_mentor_marks`]?.marks || 0}</td>
-              </tr>
-              <tr>
-                <td style={headerStyle}>Proof page number</td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div style={{ height: '20px' }}></div>
-
-          {/* Project Presentation */}
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <td rowSpan="3" style={headerStyle}>Activity</td>
-                <td style={headerStyle}>Submitted</td>
-                <td colSpan="3" style={headerStyle}>Presented</td>
-                <td colSpan="3" style={headerStyle}>Prize</td>
-                <td style={headerStyle}>Max Points</td>
-              </tr>
-              <tr>
-                <td style={headerStyle}></td>
-                <td style={headerStyle}>Inside</td>
-                <td style={headerStyle}>Outside</td>
-                <td style={headerStyle}>Premier</td>
-                <td style={headerStyle}>Inside</td>
-                <td style={headerStyle}>Outside</td>
-                <td style={headerStyle}>Premier</td>
-                <td style={headerStyle}></td>
-              </tr>
-              <tr>
-                <td style={headerStyle}></td>
-                <td style={headerStyle}>10</td>
-                <td style={headerStyle}>15</td>
-                <td style={headerStyle}>20</td>
-                <td style={headerStyle}>20</td>
-                <td style={headerStyle}>30</td>
-                <td style={headerStyle}>50</td>
-                <td style={headerStyle}>100</td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td rowSpan="3" style={headerStyle}>2.Project Presentation</td>
-                <td style={{...cellStyle, backgroundColor: '#e3f2fd', fontWeight: 'bold'}}>
-                  {selectedStudent?.activityData?.projectPresentation?.count || 0}
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('projectPresentation', 'presented_inside', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('projectPresentation', 'presented_outside', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('projectPresentation', 'presented_premier', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('projectPresentation', 'prize_inside', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('projectPresentation', 'prize_outside', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    onChange={(e) => handleMarksChange('projectPresentation', 'prize_premier', 'count', e.target.value)}
-                  />
-                </td>
-                <td style={cellStyle}>{calculateActivityTotal('projectPresentation')}</td>
-              </tr>
-              <tr>
-                <td style={headerStyle}>Student marks (count x marks)</td>
-                <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
-                  {selectedStudent?.activityData?.projectPresentation?.studentMarks || 0}
-                </td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
-                  {selectedStudent?.activityData?.projectPresentation?.studentMarks || 0}
-                </td>
-              </tr>
-              <tr>
-                <td style={headerStyle}>Mentor marks (count x marks)</td>
-                <td style={cellStyle}>
-                  <input 
-                    type="number" 
-                    style={inputStyle}
-                    placeholder="Enter marks"
-                    onChange={(e) => setStudentMarks(prev => ({
-                      ...prev,
-                      [`${selectedStudent.email}_projectPresentation_mentor_marks`]: {
-                        marks: parseInt(e.target.value) || 0
-                      }
-                    }))}
-                  />
-                </td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>-</td>
-                <td style={cellStyle}>{studentMarks[`${selectedStudent.email}_projectPresentation_mentor_marks`]?.marks || 0}</td>
-              </tr>
-              <tr>
-                <td style={headerStyle}>Proof page number</td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-                <td style={cellStyle}></td>
-              </tr>
-            </tbody>
-          </table>
+          ))}
 
           <div style={{ height: '20px' }}></div>
 

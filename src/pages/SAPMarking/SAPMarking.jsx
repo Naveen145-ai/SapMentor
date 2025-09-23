@@ -90,68 +90,75 @@ const SAPMarking = () => {
     const counts = ev.values?.counts || {};
     const studentMarks = ev.values?.studentMarks || {};
     const mentorMarks = ev.mentorMarks || {};
+    
+    console.log('Rendering event:', ev.key, 'counts:', counts, 'studentMarks:', studentMarks);
+    
     return (
       <div className="activity-table">
-        <table>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
           <thead>
             <tr>
-              <th rowSpan="2">Activity</th>
+              <th rowSpan="2" style={{ border: '1px solid #ddd', padding: '8px' }}>Activity</th>
               {cfg.headerGroups.map((g, idx) => (
-                <th key={idx} colSpan={g.span}>{g.title}</th>
+                <th key={idx} colSpan={g.span} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>{g.title}</th>
               ))}
-              <th rowSpan="2">Max Points</th>
+              <th rowSpan="2" style={{ border: '1px solid #ddd', padding: '8px' }}>Max Points</th>
             </tr>
             <tr>
               {cfg.columns.map((c) => (
-                <th key={c.key}>{c.label}</th>
+                <th key={c.key} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>{c.label}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>{cfg.title}</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{cfg.title}</td>
               {cfg.columns.map((c) => (
-                <td key={`pt-${c.key}`}>{c.points}</td>
+                <td key={`pt-${c.key}`} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>{c.points}</td>
               ))}
-              <td>{cfg.maxPoints}</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>{cfg.maxPoints}</td>
             </tr>
-            <tr>
-              <td>Count</td>
+            <tr style={{ backgroundColor: '#f9f9f9' }}>
+              <td style={{ border: '1px solid #ddd', padding: '8px', fontWeight: 'bold' }}>Student Count</td>
               {cfg.columns.map((c) => (
-                <td key={`cnt-${c.key}`}>{String(counts[c.key] || 0)}</td>
+                <td key={`cnt-${c.key}`} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center', fontWeight: 'bold', color: '#2196F3' }}>
+                  {counts[c.key] || 0}
+                </td>
               ))}
-              <td></td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}></td>
             </tr>
-            <tr>
-              <td>Student marks (count x marks)</td>
+            <tr style={{ backgroundColor: '#f0f8ff' }}>
+              <td style={{ border: '1px solid #ddd', padding: '8px', fontWeight: 'bold' }}>Student marks (count x marks)</td>
               {cfg.columns.map((c) => (
-                <td key={`sm-${c.key}`}>{String(studentMarks[c.key] || 0)}</td>
+                <td key={`sm-${c.key}`} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center', fontWeight: 'bold', color: '#4CAF50' }}>
+                  {studentMarks[c.key] || 0}
+                </td>
               ))}
-              <td></td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}></td>
             </tr>
-            <tr>
-              <td>Mentor marks (count x marks)</td>
+            <tr style={{ backgroundColor: '#fff3e0' }}>
+              <td style={{ border: '1px solid #ddd', padding: '8px', fontWeight: 'bold' }}>Mentor marks (count x marks)</td>
               {cfg.columns.map((c) => (
-                <td key={`mm-${c.key}`}>
+                <td key={`mm-${c.key}`} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>
                   <input
                     type="number"
                     min="0"
-                    placeholder="Marks"
+                    placeholder="Enter marks"
                     value={marks[`${ev.key}__${c.key}`] ?? mentorMarks[c.key] ?? ''}
                     onChange={(e) => setMarks(prev => ({ ...prev, [`${ev.key}__${c.key}`]: e.target.value }))}
                     className="marks-input"
-                    style={{ width: '70px' }}
+                    style={{ width: '80px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', textAlign: 'center' }}
                   />
                 </td>
               ))}
-              <td></td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}></td>
             </tr>
             <tr>
-              <td>Proof page number</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Proof page number</td>
               {cfg.columns.map((c) => (
-                <td key={`pp-${c.key}`}>-</td>
+                <td key={`pp-${c.key}`} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>-</td>
               ))}
-              <td></td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}></td>
             </tr>
           </tbody>
         </table>
