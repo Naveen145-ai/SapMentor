@@ -7,9 +7,9 @@ const getEventConfig = (key) => {
     return {
       title: '1. Paper Presentation',
       columns: [
-        { key: 'insidePresented', label: 'Inside', points: 5 },
-        { key: 'outsidePresented', label: 'Outside', points: 10 },
-        { key: 'premierPresented', label: 'Premier', points: 20 },
+        { key: 'insidePresented', label: 'Inside', points: 2 },
+        { key: 'outsidePresented', label: 'Outside', points: 5 },
+        { key: 'premierPresented', label: 'Premier', points: 10 },
         { key: 'insidePrize', label: 'Inside', points: 20 },
         { key: 'outsidePrize', label: 'Outside', points: 30 },
         { key: 'premierPrize', label: 'Premier', points: 50 },
@@ -679,11 +679,11 @@ const CollegeSAPForm = () => {
           {/* Student Submitted Proofs (from latest individualEvents submission) */}
           <div style={{ marginBottom: '20px' }}>
             <h3># Student Submitted Proofs</h3>
-            {getSelectedStudentEvents().length === 0 ? (
+            {getSelectedStudentEvents(selectedStudent).length === 0 ? (
               <div style={{ color: '#888' }}>No proofs uploaded.</div>
             ) : (
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                {getSelectedStudentEvents().map((ev, idx) => (
+                {getSelectedStudentEvents(selectedStudent).map((ev, idx) => (
                   ev.proofUrls && ev.proofUrls.length > 0 && (
                     <div key={ev.key || idx} style={{ marginBottom: '15px' }}>
                       <strong>{ev.title || ev.key}:</strong>
@@ -711,9 +711,9 @@ const CollegeSAPForm = () => {
           </div>
 
           {/* Render structured tables for each event in latest individualEvents submission */}
-          {getSelectedStudentEvents().map((ev, idx) => (
+          {getSelectedStudentEvents(selectedStudent).map((ev, idx) => (
             <div key={ev.key || idx}>
-              {renderStructuredEventTable(ev)}
+              {renderStructuredEventTable(ev, tableStyle, headerStyle, cellStyle, inputStyle)}
             </div>
           ))}
 
