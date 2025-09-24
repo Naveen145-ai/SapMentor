@@ -42,11 +42,17 @@ const getEventConfig = (key) => {
   return null;
 };
 
-const renderStructuredEventTable = (ev, tableStyle, headerStyle, cellStyle, inputStyle) => {
+const renderStructuredEventTable = (ev, tableStyle, headerStyle, cellStyle, inputStyle, mentorEventMarks, onMentorMarkChange) => {
   const cfg = getEventConfig(ev.key || ev.title || '');
   if (!cfg) return null;
   const counts = ev.values?.counts || {};
-  const student = ev.values?.studentMarks || {};
+  // Compute student marks as count * points for each column, independent of provided studentMarks
+  const computedStudentMarks = {};
+  cfg.columns.forEach(c => {
+    const cnt = parseInt(counts[c.key] || 0) || 0;
+    computedStudentMarks[c.key] = cnt * c.points;
+  });
+  const studentTotal = cfg.columns.reduce((sum, c) => sum + (computedStudentMarks[c.key] || 0), 0);
   return (
     <table style={{ ...tableStyle, marginTop: '20px' }} key={ev.key}>
       <thead>
@@ -91,29 +97,38 @@ const renderStructuredEventTable = (ev, tableStyle, headerStyle, cellStyle, inpu
         </tr>
         <tr>
           <td style={headerStyle}>Student marks (count x marks)</td>
-          <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
-            {cfg.columns.reduce((s, c) => s + (parseInt(student[c.key] || 0) || 0), 0)}
-          </td>
           {cfg.columns.map(c => (
-            <td key={`sm-${c.key}`} style={cellStyle}>{student[c.key] || 0}</td>
+            <td key={`sm-${c.key}`} style={cellStyle}>{computedStudentMarks[c.key] || 0}</td>
           ))}
           <td style={{...cellStyle, backgroundColor: '#e8f5e8', fontWeight: 'bold'}}>
-            {cfg.columns.reduce((s, c) => s + (parseInt(student[c.key] || 0) || 0), 0)}
+            {studentTotal}
           </td>
         </tr>
         <tr>
           <td style={headerStyle}>Mentor marks (count x marks)</td>
-          <td style={cellStyle}>
-            <input type="number" style={inputStyle} placeholder="Enter marks" />
-          </td>
           {cfg.columns.map(c => (
-            <td key={`mm-${c.key}`} style={cellStyle}>-</td>
+            <td key={`mm-${c.key}`} style={cellStyle}>
+              <input
+                type="number"
+                style={inputStyle}
+                placeholder="Enter marks"
+                value={(mentorEventMarks?.[ev.key]?.[c.key] ?? '')}
+                onChange={(e) => onMentorMarkChange(ev.key, c.key, e.target.value)}
+              />
+            </td>
           ))}
-          <td style={cellStyle}>0</td>
+          <td style={cellStyle}>
+            <input
+              type="number"
+              style={inputStyle}
+              placeholder="Total"
+              value={(mentorEventMarks?.[ev.key]?.total ?? '')}
+              onChange={(e) => onMentorMarkChange(ev.key, 'total', e.target.value)}
+            />
+          </td>
         </tr>
         <tr>
           <td style={headerStyle}>Proof page number</td>
-          <td style={cellStyle}></td>
           {cfg.columns.map(c => (
             <td key={`pf-${c.key}`} style={cellStyle}></td>
           ))}
@@ -138,6 +153,7 @@ const CollegeSAPForm = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [studentMarks, setStudentMarks] = useState({});
   const [mentorEmail] = useState('mugilanks.23cse@kongu.edu');
+  const [mentorEventMarks, setMentorEventMarks] = useState({});
 
   // Fetch students data
   useEffect(() => {
@@ -400,6 +416,27 @@ const CollegeSAPForm = () => {
     fetchStudents();
   }, [mentorEmail]);
 
+  // When selected student changes, prefill mentorEventMarks from latest individualEvents submission
+  useEffect(() => {
+    if (!selectedStudent) {
+      setMentorEventMarks({});
+      return;
+    }
+    const subs = selectedStudent.submissions || [];
+    const indiv = subs
+      .filter(s => s.category === 'individualEvents')
+      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0];
+    if (!indiv) {
+      setMentorEventMarks({});
+      return;
+    }
+    const prefill = {};
+    (indiv.events || []).forEach(ev => {
+      if (ev.mentorMarks) prefill[ev.key] = { ...ev.mentorMarks };
+    });
+    setMentorEventMarks(prefill);
+  }, [selectedStudent]);
+
   // Handle marks change
   const handleMarksChange = (activityType, category, field, value) => {
     const key = `${selectedStudent.email}_${activityType}_${category}`;
@@ -594,6 +631,46 @@ const CollegeSAPForm = () => {
     fontSize: '11px'
   };
 
+  // Change handler for mentor per-column marks
+  const onMentorMarkChange = (eventKey, fieldKey, value) => {
+    setMentorEventMarks(prev => ({
+      ...prev,
+      [eventKey]: {
+        ...(prev[eventKey] || {}),
+        [fieldKey]: value
+      }
+    }));
+  };
+
+  // Helper to get latest individual events submission for selected student
+  const getLatestIndividualSubmission = () => {
+    if (!selectedStudent) return null;
+    const subs = selectedStudent.submissions || [];
+    return subs.filter(s => s.category === 'individualEvents')
+      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0] || null;
+  };
+
+  // Save mentor marks for a single event to backend
+  const saveMentorMarksForEvent = async (submissionId, eventKey) => {
+    try {
+      const marks = mentorEventMarks[eventKey] || {};
+      const res = await fetch(`http://localhost:8080/api/mentor/update-event-marks/${submissionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventKey, eventMarks: marks, eventNote: '' })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || data.error || 'Failed to update marks');
+        return;
+      }
+      alert('Mentor marks saved for event');
+    } catch (e) {
+      console.error(e);
+      alert('Network error while saving marks');
+    }
+  };
+
   return (
     <div style={{ 
       padding: '20px', 
@@ -711,11 +788,25 @@ const CollegeSAPForm = () => {
           </div>
 
           {/* Render structured tables for each event in latest individualEvents submission */}
-          {getSelectedStudentEvents(selectedStudent).map((ev, idx) => (
-            <div key={ev.key || idx}>
-              {renderStructuredEventTable(ev, tableStyle, headerStyle, cellStyle, inputStyle)}
-            </div>
-          ))}
+          {getSelectedStudentEvents(selectedStudent).map((ev, idx) => {
+            const latest = getLatestIndividualSubmission();
+            const submissionId = latest?._id;
+            return (
+              <div key={ev.key || idx}>
+                {renderStructuredEventTable(ev, tableStyle, headerStyle, cellStyle, inputStyle, mentorEventMarks, onMentorMarkChange)}
+                {submissionId && (
+                  <div style={{ textAlign: 'right', margin: '6px 0 16px' }}>
+                    <button
+                      onClick={() => saveMentorMarksForEvent(submissionId, ev.key)}
+                      style={{ padding: '6px 12px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      Save Mentor Marks for {ev.title || ev.key}
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
           <div style={{ height: '20px' }}></div>
 
