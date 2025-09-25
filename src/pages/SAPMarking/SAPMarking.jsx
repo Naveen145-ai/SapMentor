@@ -8,6 +8,11 @@ const SAPMarking = () => {
   const [mentorEmail, setMentorEmail] = useState(localStorage.getItem('mentorEmail') || '');
   const [marks, setMarks] = useState({});
   const [loading, setLoading] = useState(false);
+  // Proof viewer modal state
+  const [proofModalOpen, setProofModalOpen] = useState(false);
+  const [proofImages, setProofImages] = useState([]); // array of URLs
+  const [proofTitle, setProofTitle] = useState('');
+  const [currentProofIndex, setCurrentProofIndex] = useState(0);
 
   // Fetch SAP form submissions for this mentor
   useEffect(() => {
@@ -154,17 +159,54 @@ const SAPMarking = () => {
               <td style={{ border: '1px solid #ddd', padding: '8px' }}></td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Proof page number</td>
-              {cfg.columns.map((c) => (
-                <td key={`pp-${c.key}`} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>-</td>
-              ))}
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}></td>
+              <td colSpan={cfg.columns.length + 2} style={{ border: '1px solid #ddd', padding: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <strong>Proof page numbers:</strong>
+                  {Array.from({ length: (ev.proofUrls?.length || 0) }, (_, i) => (
+                    <span key={`pnum-${i}`} style={{
+                      display: 'inline-block', minWidth: 24, textAlign: 'center', padding: '2px 6px',
+                      border: '1px solid #ddd', borderRadius: 4, background: '#fafafa'
+                    }}>{i + 1}</span>
+                  ))}
+                  {(ev.proofUrls?.length || 0) === 0 && <span>-</span>}
+                  {ev.proofUrls && ev.proofUrls.length > 0 && (
+                    <button
+                      className="review-btn"
+                      style={{ padding: '6px 10px', marginLeft: 'auto' }}
+                      onClick={() => openProofViewer(ev.proofUrls, `${ev.title || ev.key} - Proofs`)}
+                    >
+                      📎 Proof ({ev.proofUrls.length})
+                    </button>
+                  )}
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     );
   };
+
+  // Normalize proof URL (prefix server if starts with /)
+  const toAbsoluteProofUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    // serve from backend static /uploads
+    return `http://localhost:8080${url.startsWith('/') ? url : `/${url}`}`;
+  };
+
+  // Open proof viewer
+  const openProofViewer = (urls, title = 'Proofs') => {
+    const abs = (urls || []).map(toAbsoluteProofUrl);
+    setProofImages(abs);
+    setProofTitle(title);
+    setCurrentProofIndex(0);
+    setProofModalOpen(true);
+  };
+
+  const closeProofViewer = () => setProofModalOpen(false);
+  const nextProof = () => setCurrentProofIndex((i) => (i + 1) % Math.max(proofImages.length, 1));
+  const prevProof = () => setCurrentProofIndex((i) => (i - 1 + Math.max(proofImages.length, 1)) % Math.max(proofImages.length, 1));
 
   // Submit marks for a specific EVENT inside an individualEvents submission
   const handleSubmitEventMarks = async (submission, eventKey) => {
@@ -481,16 +523,15 @@ const SAPMarking = () => {
                         </div>
                       )
                     )}
-                    {ev.proofUrls && ev.proofUrls.length > 0 && (
-                      <div className="proof-files">
-                        <h5>Proof Files</h5>
-                        <div className="proof-grid">
-                          {ev.proofUrls.map((url, idx) => (
-                            <div key={idx} className="proof-item">
-                              <a href={`http://localhost:8080${url}`} target="_blank" rel="noopener noreferrer">📎 View Proof {idx + 1}</a>
-                            </div>
-                          ))}
-                        </div>
+                    {!getEventConfig(ev.key) && ev.proofUrls && ev.proofUrls.length > 0 && (
+                      <div className="proof-files" style={{ marginTop: '10px' }}>
+                        <button
+                          className="review-btn"
+                          style={{ padding: '6px 10px' }}
+                          onClick={() => openProofViewer(ev.proofUrls, `${ev.title || ev.key} - Proofs`)}
+                        >
+                          📎 Proof ({ev.proofUrls.length})
+                        </button>
                       </div>
                     )}
                     <div className="marking-actions" style={{ marginTop: '8px' }}>
@@ -509,16 +550,74 @@ const SAPMarking = () => {
 
             {/* Proof Files Section */}
             {selectedSubmission.proofUrls && selectedSubmission.proofUrls.length > 0 && (
-              <div className="proof-files">
-                <h3>Proof Files</h3>
-                <div className="proof-grid">
-                  {selectedSubmission.proofUrls.map((url, idx) => (
-                    <div key={idx} className="proof-item">
-                      <a href={url} target="_blank" rel="noopener noreferrer">
-                        📎 View Proof {idx + 1}
-                      </a>
+              <div className="proof-files" style={{ marginTop: '16px' }}>
+                <h3>Overall Proofs</h3>
+                <button
+                  className="review-btn"
+                  style={{ padding: '6px 10px' }}
+                  onClick={() => openProofViewer(selectedSubmission.proofUrls, 'Submission Proofs')}
+                >
+                  📎 Proof ({selectedSubmission.proofUrls.length})
+                </button>
+              </div>
+            )}
+
+            {/* Proof Viewer Modal */}
+            {proofModalOpen && (
+              <div
+                className="proof-modal-overlay"
+                style={{
+                  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 1000,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+                onClick={closeProofViewer}
+              >
+                <div
+                  className="proof-modal"
+                  style={{
+                    background: '#fff', width: 'min(900px, 96vw)', maxHeight: '92vh', borderRadius: 8,
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)', overflow: 'hidden', display: 'flex', flexDirection: 'column'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid #eee' }}>
+                    <h4 style={{ margin: 0 }}>{proofTitle}</h4>
+                    <button className="back-btn" onClick={closeProofViewer}>✖</button>
+                  </div>
+                  <div style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+                    <button onClick={prevProof} className="review-btn" style={{ padding: '6px 10px' }}>← Prev</button>
+                    <div style={{ flex: 1, textAlign: 'center' }}>
+                      {proofImages.length > 0 ? (
+                        <img
+                          src={proofImages[currentProofIndex]}
+                          alt={`Proof ${currentProofIndex + 1}`}
+                          style={{
+                            maxWidth: '100%', maxHeight: '65vh', objectFit: 'contain', borderRadius: 6,
+                            border: '1px solid #eee', background: '#fafafa'
+                          }}
+                        />
+                      ) : (
+                        <div>No proofs available</div>
+                      )}
                     </div>
-                  ))}
+                    <button onClick={nextProof} className="review-btn" style={{ padding: '6px 10px' }}>Next →</button>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderTop: '1px solid #eee' }}>
+                    <div>
+                      Page {proofImages.length ? currentProofIndex + 1 : 0} of {proofImages.length}
+                    </div>
+                    {proofImages.length > 0 && (
+                      <a
+                        href={proofImages[currentProofIndex]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="review-btn"
+                        style={{ padding: '6px 10px' }}
+                      >
+                        Open Original
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
